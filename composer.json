@@ -1,0 +1,36 @@
+{
+    "name": "hskrasek/laravel-zero-oauth",
+    "description": "Easily add OAuth2 authentication to your Laravel Zero application.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hunter Skrasek",
+            "email": "hunterskrasek@me.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "HSkrasek\\LaravelZeroOAuth\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.3",
+        "laravel-zero/framework": "^10",
+        "league/oauth2-client": "^2.7"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "laravel/pint": "^1.13",
+        "pestphp/pest": "^2.33",
+        "phpstan/phpstan": "^1.10"
+    }
+}
