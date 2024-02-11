@@ -18,12 +18,12 @@ class LaravelZeroOAuthServiceProvider extends ServiceProvider
             $provider = config('oauth.provider');
 
             return new $provider([
-                'clientId' => config('oauth.client_id'),
-                'clientSecret' => config('oauth.client_secret'),
-                'redirectUri' => config('oauth.redirect_uri'),
-                'urlAuthorize' => config('oauth.authorize_uri'),
-                'urlAccessToken' => config('oauth.token_uri'),
-                'scopes' => config('oauth.scopes'),
+                'clientId' => config('oauth.auth.client_id'),
+                'clientSecret' => config('oauth.auth.client_secret'),
+                'redirectUri' => config('oauth.auth.redirect_uri'),
+                'urlAuthorize' => config('oauth.auth.authorize_uri'),
+                'urlAccessToken' => config('oauth.auth.token_uri'),
+                'scopes' => config('oauth.auth.scopes'),
             ]);
         });
     }
