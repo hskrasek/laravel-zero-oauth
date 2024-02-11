@@ -11,7 +11,7 @@ class LaravelZeroOAuthServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/oauth.php', 'oauth');
+        $this->mergeConfigFrom(__DIR__.'/../config/oauth.php', 'oauth');
 
         $this->app->singleton(config('oauth.provider'), function () {
             /** @phpstan-var AbstractProvider $provider */

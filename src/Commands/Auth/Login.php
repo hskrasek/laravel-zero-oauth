@@ -12,6 +12,9 @@ use Symfony\Component\Process\Process;
 
 class Login extends Command
 {
+    /**
+     * @var string[]
+     */
     private static array $passThroughVariables = [
         'APP_ENV',
         'PATH',
@@ -29,6 +32,9 @@ class Login extends Command
 
     private bool $serverRunningHasBeenDisplayed = false;
 
+    /**
+     * @var array<int, array{0: int, 1: bool|string|Carbon}>
+     */
     private array $requestsPool = [];
 
     public function handle(AbstractProvider $provider): int
@@ -45,17 +51,19 @@ class Login extends Command
             usleep(1000 * 500);
         }
 
-        return $process->getExitCode();
+        return $process->getExitCode() ?? Command::SUCCESS;
     }
 
     private function startProcess(): Process
     {
         $process = new Process(
-            command: $this->serverCommand(), cwd: base_path(), env: collect($_ENV)->mapWithKeys(
-            function ($value, $key) {
-                return in_array($key, static::$passThroughVariables, true) ? [$key => $value] : [$key => false];
-            }
-        )->all()
+            command: $this->serverCommand(),
+            cwd: base_path(),
+            env: collect($_ENV)->mapWithKeys(
+                function ($value, $key) {
+                    return in_array($key, self::$passThroughVariables, true) ? [$key => $value] : [$key => false];
+                }
+            )->all()
         );
 
         $process->start($this->handleProcessOutput($process));
@@ -63,24 +71,26 @@ class Login extends Command
         return $process;
     }
 
+    /**
+     * @return string[]
+     */
     private function serverCommand(): array
     {
         return [
             (new PhpExecutableFinder())->find(includeArgs: false),
             '-S',
             config('oauth.redirect_uri'),
-            '' //TODO: Add server PHP script
+            '', //TODO: Add server PHP script
         ];
     }
 
     /**
-     * @param Process $process
      * @return callable(string, string): void
      */
     private function handleProcessOutput(Process $process): callable
     {
-        return fn(string $type, string $buffer) => str($buffer)->explode("\n")->each(
-            function (string $line) use ($process) {
+        return fn (string $type, string $buffer) => str($buffer)->explode("\n")->each(
+            function (string $line) use ($process): void {
                 if (str($line)->contains('Development Server (http')) {
                     if ($this->serverRunningHasBeenDisplayed) {
                         return;
@@ -99,6 +109,10 @@ class Login extends Command
                         $this->getRequestPortFromLine($line),
                         false,
                     ];
+                } elseif (str($line)->contains([' [200]: GET '])) {
+                    $requestPort = $this->getRequestPortFromLine($line);
+
+                    $this->requestsPool[$requestPort][1] = $this->getDateFromLine(trim(explode('[200]: GET', $line)[1]));
                 } elseif (str($line)->contains(' Closing')) {
                     $requestPort = $this->getRequestPortFromLine($line);
 
@@ -109,7 +123,7 @@ class Login extends Command
                     unset($this->requestsPool[$requestPort]);
 
                     $process->stop();
-                } elseif(!empty($line)) {
+                } elseif (! empty($line)) {
                     $position = strpos($line, '] ');
 
                     if ($position !== false) {
@@ -122,7 +136,7 @@ class Login extends Command
         );
     }
 
-    private function getDateFromLine(string $line): Carbon
+    private function getDateFromLine(string $line): Carbon|false
     {
         $regex = env('PHP_CLI_SERVER_WORKERS', 1) > 1
             ? '/^\[\d+]\s\[([a-zA-Z0-9: ]+)\]/'
