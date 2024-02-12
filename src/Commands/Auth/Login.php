@@ -80,7 +80,7 @@ class Login extends Command
             (new PhpExecutableFinder())->find(includeArgs: false),
             '-S',
             config('oauth.redirect_uri'),
-            '', //TODO: Add server PHP script
+            __DIR__ . '/../../../bin/server.php',
         ];
     }
 
