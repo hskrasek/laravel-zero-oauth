@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace HSkrasek\LaravelZeroOAuth;
 
+use HSkrasek\LaravelZeroOAuth\Commands\Auth\Login;
 use Illuminate\Support\ServiceProvider;
+use League\OAuth2\Client\OptionProvider\HttpBasicAuthOptionProvider;
 use League\OAuth2\Client\Provider\AbstractProvider;
 
 class LaravelZeroOAuthServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/oauth.php', 'oauth');
+        $this->publishes([
+            __DIR__ . '/../config/oauth.php' => config_path('oauth.php'),
+        ], 'config');
+
+        $this->mergeConfigFrom(__DIR__ . '/../config/oauth.php', 'oauth');
 
         $this->app->singleton(config('oauth.provider'), function () {
             /** @phpstan-var AbstractProvider $provider */
@@ -24,7 +30,17 @@ class LaravelZeroOAuthServiceProvider extends ServiceProvider
                 'urlAuthorize' => config('oauth.auth.authorize_uri'),
                 'urlAccessToken' => config('oauth.auth.token_uri'),
                 'scopes' => config('oauth.auth.scopes'),
-            ]);
+                'urlResourceOwnerDetails' => '',
+                'scopeSeparator' => ' ',
+            ], ['optionProvider' => new HttpBasicAuthOptionProvider(),]);
         });
+
+        $this->app->when(Login::class)
+            ->needs(AbstractProvider::class)
+            ->give(config('oauth.provider'));
+
+        $this->commands([
+            Login::class,
+        ]);
     }
 }

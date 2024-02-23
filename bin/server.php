@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 use LaravelZero\Framework\Application;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 
 /** @var Application $app */
-$app = require_once base_path() . '/bootstrap/app.php';
+$app = require_once $_SERVER['DOCUMENT_ROOT'] . '/bootstrap/app.php';
 
 $app->make(abstract: Illuminate\Contracts\Console\Kernel::class)
     ->bootstrap();
@@ -16,9 +17,15 @@ $app->make(abstract: Illuminate\Contracts\Console\Kernel::class)
 /** @var AbstractProvider $provider */
 $provider = $app->make(config('oauth.provider'));
 
-$accessToken = $provider->getAccessToken(grant: 'authorization_code', options: [
-    'code' => $_GET['code'],
-]);
+try {
+    $accessToken = $provider->getAccessToken(grant: 'authorization_code', options: [
+        'code' => $_GET['code'] ?? '',
+    ]);
+} catch (IdentityProviderException $e) {
+    dd($e->getResponseBody());
+} catch (UnexpectedValueException $e) {
+    dd($e);
+}
 
 file_put_contents(
     filename: config('oauth.storage') . '/access_token.json',

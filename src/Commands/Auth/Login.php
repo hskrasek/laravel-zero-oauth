@@ -41,9 +41,7 @@ class Login extends Command
     {
         $authorizationUrl = $provider->getAuthorizationUrl();
 
-        Process::fromShellCommandline(
-            sprintf('%s %s', $this->getUrlOpenCommand(), $authorizationUrl)
-        )->run();
+        (new Process([$this->getUrlOpenCommand(), $authorizationUrl]))->run();
 
         $process = $this->startProcess();
 
@@ -76,10 +74,14 @@ class Login extends Command
      */
     private function serverCommand(): array
     {
+        $redirectUri = str(config('oauth.auth.redirect_uri'))
+            ->replaceStart('http://', '')
+            ->replaceStart('https://', '');
+
         return [
             (new PhpExecutableFinder())->find(includeArgs: false),
             '-S',
-            config('oauth.redirect_uri'),
+            $redirectUri,
             __DIR__ . '/../../../bin/server.php',
         ];
     }
@@ -123,7 +125,7 @@ class Login extends Command
                     unset($this->requestsPool[$requestPort]);
 
                     $process->stop();
-                } elseif (! empty($line)) {
+                } elseif (!empty($line)) {
                     $position = strpos($line, '] ');
 
                     if ($position !== false) {
