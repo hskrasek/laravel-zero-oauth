@@ -86,7 +86,7 @@ class Login extends Command
         return [
             (new PhpExecutableFinder())->find(includeArgs: false),
             '-S',
-            (string)$redirectUri,
+            $redirectUri->toString(),
             __DIR__ . '/../../../bin/server.php',
         ];
     }
