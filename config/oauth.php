@@ -22,4 +22,8 @@ return [
     ],
 
     'storage' => env('OAUTH2_STORAGE_PATH', storage_path('oauth2')),
+
+    'commands' => [
+        'login' => env('OAUTH2_LOGIN_COMMAND', 'auth:login'),
+    ],
 ];

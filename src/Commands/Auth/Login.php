@@ -26,8 +26,6 @@ class Login extends Command
         'XDEBUG_SESSION',
     ];
 
-    protected $signature = 'oauth:login';
-
     protected $description = 'Authenticate with the configured OAuth service provider';
 
     private bool $serverRunningHasBeenDisplayed = false;
@@ -36,6 +34,13 @@ class Login extends Command
      * @var array<int, array{0: int, 1: bool|string|Carbon}>
      */
     private array $requestsPool = [];
+
+    public function __construct()
+    {
+        $this->signature = config('oauth.commands.login');
+
+        parent::__construct();
+    }
 
     public function handle(AbstractProvider $provider): int
     {
@@ -81,7 +86,7 @@ class Login extends Command
         return [
             (new PhpExecutableFinder())->find(includeArgs: false),
             '-S',
-            $redirectUri,
+            $redirectUri->toString(),
             __DIR__ . '/../../../bin/server.php',
         ];
     }
