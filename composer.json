@@ -35,5 +35,13 @@
     },
     "bin": [
         "bin/server.php"
-    ]
+    ],
+    "scripts": {
+        "test": [
+            "vendor/bin/pest",
+            "vendor/bin/phpstan analyse"
+        ],
+        "format": "vendor/bin/pint",
+        "format:test": "vendor/bin/pint --test -v"
+    }
 }
