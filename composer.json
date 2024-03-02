@@ -29,6 +29,7 @@
         }
     },
     "require-dev": {
+        "illuminate/http": "^10.45",
         "laravel/pint": "^1.13",
         "pestphp/pest": "^2.33",
         "phpstan/phpstan": "^1.10"
@@ -43,5 +44,8 @@
         ],
         "format": "vendor/bin/pint",
         "format:test": "vendor/bin/pint --test -v"
+    },
+    "suggest": {
+        "illuminate/http": "Laravel provides an HTTP client that can be used to make requests to your resource server."
     }
 }
