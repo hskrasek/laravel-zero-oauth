@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace HSkrasek\LaravelZeroOAuth\Http\Middleware;
 
+use HSkrasek\LaravelZeroOAuth\Token;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;
+
+use function Crell\fp\pipe;
 
 final readonly class RefreshToken
 {
@@ -16,40 +19,44 @@ final readonly class RefreshToken
     }
 
     /**
-     * @throws IdentityProviderException|RuntimeException
+     * @throws RuntimeException
      * @return callable
      */
     public function __invoke(): callable
     {
-        $accessTokenJson = file_get_contents(
-            filename: config('oauth.storage') . '/access_token.json',
+        /** @var string $token */
+        $token = pipe(
+            config('oauth.storage') . '/access_token.json',
+            $this->loadToken(...),
+            $this->refreshToken(...),
         );
 
-        if ($accessTokenJson === false) {
+        return static fn (callable $handler): callable =>
+            static fn(RequestInterface $request, array $options): mixed => $handler(
+                $request->withHeader('Authorization', 'Bearer ' . $token),
+                $options
+            );
+    }
+
+    private function loadToken(string $path): Token
+    {
+        $json = file_get_contents($path);
+
+        if ($json === false) {
             throw new RuntimeException('Unable to read access token.');
         }
 
-        try {
-            /** @var array{token_type: string, access_token: string, refresh_token: string, expires: string} $existingToken */
-            $existingToken = json_decode($accessTokenJson, associative: true, flags: JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new RuntimeException('Unable to decode access token.', previous: $e);
+        return Token::fromJson($json);
+    }
+
+    private function refreshToken(Token $token): string
+    {
+        if ($token->isValid()) {
+            return $token->accessToken;
         }
 
-        $token = $existingToken['access_token'];
-
-        if ($existingToken['expires'] < time()) {
-            $token = $this->provider->getAccessToken('refresh_token', [
-                'refresh_token' => $existingToken['refresh_token'],
-            ])->getToken();
-        }
-
-        return static fn (callable $handler): callable =>
-            static function (RequestInterface $request, array $options) use ($handler, $token): mixed {
-                return $handler(
-                    $request->withHeader('Authorization', 'Bearer ' . $token),
-                    $options
-                );
-            };
+        return $this->provider->getAccessToken('refresh_token', [
+            'refresh_token' => $token->refreshToken,
+        ])->getToken();
     }
 }
