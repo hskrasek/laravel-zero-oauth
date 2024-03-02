@@ -21,10 +21,40 @@ try {
     $accessToken = $provider->getAccessToken(grant: 'authorization_code', options: [
         'code' => $_GET['code'] ?? '',
     ]);
-} catch (IdentityProviderException $e) {
-    dd($e->getResponseBody());
-} catch (UnexpectedValueException $e) {
-    dd($e);
+} catch (IdentityProviderException | UnexpectedValueException $e) {
+    header(header: 'Content-Type: text/html', response_code: 401);
+    echo <<<HTML
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Unauthorized</title>
+    </head>
+    <body>
+        <h1>Unauthorized</h1>
+        <p>Authorization unsuccessful. {$e->getMessage()}</p>
+    </body>
+</html>
+HTML;
+
+    if (\function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } elseif (\function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    } elseif (!\in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
+        $status = \ob_get_status(true);
+        $level = \count($status);
+        $flags = \PHP_OUTPUT_HANDLER_REMOVABLE | \PHP_OUTPUT_HANDLER_FLUSHABLE;
+
+        while ($level-- > 0 && ($s = $status[$level]) && (!isset($s['del']) ? !isset($s['flags']) || ($s['flags'] & $flags) === $flags : $s['del'])) {
+            ob_end_flush();
+        }
+
+        flush();
+    }
+
+    $app->terminate();
+
+    exit;
 }
 
 file_put_contents(
