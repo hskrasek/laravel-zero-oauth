@@ -9,9 +9,12 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 
 final readonly class Token implements \JsonSerializable
 {
+    /**
+     * @param array<string, mixed> $values
+     */
     private function __construct(
         public string $accessToken,
-        public string $refreshToken,
+        public ?string $refreshToken,
         public ?int $expires,
         public array $values = [],
     ) {
@@ -32,7 +35,7 @@ final readonly class Token implements \JsonSerializable
      */
     public static function fromJson(string $json): self
     {
-        /** @var array{access_token: string, refresh_token: string, expires: int, values: array} $data */
+        /** @var array{access_token: string, refresh_token: string, expires: int, values: array<string, mixed>} $data */
         $data = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
 
         return new self(
@@ -48,6 +51,9 @@ final readonly class Token implements \JsonSerializable
         return $this->expires < time();
     }
 
+    /**
+     * @return array<string, string|int|array<string, mixed>|null>
+     */
     #[\Override]
     public function jsonSerialize(): array
     {
