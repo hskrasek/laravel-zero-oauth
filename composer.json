@@ -19,6 +19,7 @@
     "require": {
         "php": "^8.3",
         "crell/fp": "^1.0",
+        "crell/serde": "^1.1",
         "laravel-zero/framework": "^10",
         "league/oauth2-client": "^2.7"
     },
