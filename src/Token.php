@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HSkrasek\LaravelZeroOAuth;
 
+use JsonException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 
 final readonly class Token implements \JsonSerializable
@@ -26,14 +27,13 @@ final readonly class Token implements \JsonSerializable
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public static function fromJson(string $json): self
     {
-        try {
-            /** @var array{access_token: string, refresh_token: string, expires: int, values: array} $data */
-            $data = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new \RuntimeException('Unable to decode access token.', previous: $e);
-        }
+        /** @var array{access_token: string, refresh_token: string, expires: int, values: array} $data */
+        $data = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
 
         return new self(
             accessToken: $data['access_token'],
