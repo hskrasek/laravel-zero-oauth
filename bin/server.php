@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Crell\Serde\SerdeCommon;
+use HSkrasek\LaravelZeroOAuth\Token;
 use LaravelZero\Framework\Application;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
@@ -57,9 +59,11 @@ HTML;
     exit;
 }
 
+$token = Token::fromAccessToken(accessToken: $accessToken);
+
 file_put_contents(
     filename: config('oauth.storage') . '/access_token.json',
-    data: json_encode($accessToken, flags: JSON_PRETTY_PRINT)
+    data: $app->make(SerdeCommon::class)->serialize($token, format: 'json'),
 );
 
 header(header: 'Content-Type: text/html', response_code: 200);
