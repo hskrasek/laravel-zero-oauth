@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Crell\Serde\SerdeCommon;
+use HSkrasek\LaravelZeroOAuth\Auth\Keyring;
 use HSkrasek\LaravelZeroOAuth\Token;
 use LaravelZero\Framework\Application;
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -61,10 +62,8 @@ HTML;
 
 $token = Token::fromAccessToken(accessToken: $accessToken);
 
-file_put_contents(
-    filename: config('oauth.storage') . '/access_token.json',
-    data: $app->make(SerdeCommon::class)->serialize($token, format: 'json'),
-);
+$app->make(Keyring::class)
+    ->add(name: 'access_token', token: $token);
 
 header(header: 'Content-Type: text/html', response_code: 200);
 echo <<<HTML
