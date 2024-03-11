@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HSkrasek\LaravelZeroOAuth;
 
+use HSkrasek\LaravelZeroOAuth\Auth\Keyring;
 use HSkrasek\LaravelZeroOAuth\Commands\Auth\Login;
 use Illuminate\Support\ServiceProvider;
 use League\OAuth2\Client\OptionProvider\HttpBasicAuthOptionProvider;
@@ -19,7 +20,7 @@ class LaravelZeroOAuthServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(__DIR__ . '/../config/oauth.php', 'oauth');
 
-        $this->app->singleton(config('oauth.provider'), function () {
+        $this->app->singleton(config('oauth.provider'), function (): AbstractProvider {
             /** @phpstan-var AbstractProvider $provider */
             $provider = config('oauth.provider');
 
@@ -34,6 +35,11 @@ class LaravelZeroOAuthServiceProvider extends ServiceProvider
                 'scopeSeparator' => ' ',
             ], ['optionProvider' => new HttpBasicAuthOptionProvider(),]);
         });
+
+        $this->app->singleton(Keyring::class, fn (): Keyring => new Keyring(
+            $this->app->make(AbstractProvider::class),
+            config('oauth.storage')
+        ));
 
         $this->app->when(Login::class)
             ->needs(AbstractProvider::class)
