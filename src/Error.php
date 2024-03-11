@@ -26,7 +26,7 @@ final readonly class Error implements \Throwable
         return new self(
             message: $message ?? $throwable->getMessage(),
             code: $throwable->getCode(),
-            previous: $throwable
+            previous: $throwable->getPrevious(),
         );
     }
 
