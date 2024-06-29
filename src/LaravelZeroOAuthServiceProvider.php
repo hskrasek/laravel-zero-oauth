@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HSkrasek\LaravelZeroOAuth;
 
+use Crell\Serde\SerdeCommon;
 use HSkrasek\LaravelZeroOAuth\Auth\Keyring;
 use HSkrasek\LaravelZeroOAuth\Commands\Auth\Login;
 use Illuminate\Support\ServiceProvider;
@@ -37,7 +38,8 @@ class LaravelZeroOAuthServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(Keyring::class, fn (): Keyring => new Keyring(
-            $this->app->make(AbstractProvider::class),
+            $this->app->make(config('oauth.provider')),
+            new SerdeCommon(),
             config('oauth.storage')
         ));
 

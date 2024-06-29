@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Crell\Serde\SerdeCommon;
 use HSkrasek\LaravelZeroOAuth\Auth\Keyring;
 use HSkrasek\LaravelZeroOAuth\Token;
 use LaravelZero\Framework\Application;

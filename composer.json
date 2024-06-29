@@ -20,7 +20,7 @@
         "php": "^8.3",
         "crell/fp": "^1.0",
         "crell/serde": "^1.1",
-        "laravel-zero/framework": "^10",
+        "laravel-zero/framework": "^11",
         "league/oauth2-client": "^2.7"
     },
     "config": {
@@ -31,7 +31,7 @@
         }
     },
     "require-dev": {
-        "illuminate/http": "^10.45",
+        "illuminate/http": "^11",
         "laravel/pint": "^1.13",
         "pestphp/pest": "^2.33",
         "phpstan/phpstan": "^1.10"

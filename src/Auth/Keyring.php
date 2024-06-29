@@ -67,8 +67,12 @@ final class Keyring
 
     public function saveToken(string $name, Token $token): void
     {
+        if (! is_dir($this->path)) {
+            mkdir($this->path, 0755, true);
+        }
+
         if (file_put_contents(
-            filename: $this->path . "/$name.json",
+            filename: $this->path."/$name.json",
             data: $this->serde->serialize($token, format: 'json'),
         ) === false) {
             // TODO: Replace with a custom exception
@@ -84,7 +88,7 @@ final class Keyring
     private function load(string $path): void
     {
         $this->keyring = pipe(
-            $path . '/*.json',
+            $path.'/*.json',
             glob(...),
             keyedMap(
                 values: function (string $file): Error|Token {
