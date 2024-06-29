@@ -55,6 +55,23 @@ Once you've configured your provider, you can use the `oauth:login` command to s
 php your-app-name oauth:login
 ```
 
+After you've authenticated with your provider, you'll be able to access the token for requests with the `Keyring` class:
+
+```php
+use HSkrasek\LaravelZeroOAuth\Auth\Keyring;
+
+// ...
+
+public function handle(Keyring $keyring)
+{
+    $token = $keyring->get('access_token');
+
+    // Use the token to make requests to your provider.
+    Http::withToken($token->accessToken)->get('https://api.example.com');
+}
+
+```
+
 ## Credits
 
 * [All Contributors](../../contributors)
