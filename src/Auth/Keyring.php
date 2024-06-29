@@ -21,6 +21,9 @@ final class Keyring
      */
     private array $keyring;
 
+    /**
+     * @var array<string, string>
+     */
     private array $keyringHashMap;
 
     public function __construct(
@@ -91,14 +94,24 @@ final class Keyring
             $path.'/*.json',
             glob(...),
             keyedMap(
-                values: function (string $file): Error|Token {
+                values: function (int $_, string $file): Error|Token {
                     try {
-                        return Token::fromJson(file_get_contents($file));
+                        $json = file_get_contents($file);
+
+                        if ($json === false) {
+                            return Error::fromMessage('Unable to read access token.');
+                        }
+
+                        return $this->serde->deserialize(
+                            $json,
+                            from: 'json',
+                            to: Token::class,
+                        );
                     } catch (\JsonException $e) {
                         return Error::fromThrowable($e);
                     }
                 },
-                keys: fn (string $file): string => pathinfo($file, PATHINFO_FILENAME),
+                keys: fn (int $_, string $file): string => pathinfo($file, PATHINFO_FILENAME),
             )(...),
             afilter(fn (Error|Token $token): bool => $token instanceof Token)(...),
         );
@@ -106,8 +119,8 @@ final class Keyring
         $this->keyringHashMap = pipe(
             $this->keyring,
             keyedMap(
-                values: fn (Token $token, string $name): string => $name,
-                keys: fn (Token $token): string => spl_object_hash($token),
+                values: fn (string $name, Token $token): string => $name,
+                keys: fn (string $name, Token $token): string => spl_object_hash($token),
             )(...),
         );
     }

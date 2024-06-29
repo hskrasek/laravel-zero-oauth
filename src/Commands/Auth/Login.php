@@ -143,9 +143,9 @@ class Login extends Command
         );
     }
 
-    private function getDateFromLine(string $line): Carbon|false
+    private function getDateFromLine(string $line): ?Carbon
     {
-        $regex = env('PHP_CLI_SERVER_WORKERS', 1) > 1
+        $regex = getenv('PHP_CLI_SERVER_WORKERS') > 1
             ? '/^\[\d+]\s\[([a-zA-Z0-9: ]+)\]/'
             : '/^\[([^\]]+)\]/';
 
