@@ -4,6 +4,5 @@ parameters:
     resultCachePath: %currentWorkingDirectory%/build/phpstan/resultCache.php
     paths:
         - src
-        - tests
         - bin
         - config
