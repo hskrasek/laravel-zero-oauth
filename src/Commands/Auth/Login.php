@@ -31,13 +31,13 @@ class Login extends Command
     private bool $serverRunningHasBeenDisplayed = false;
 
     /**
-     * @var array<int, array{0: int, 1: bool|string|Carbon}>
+     * @var array<int, array{0: int, 1: bool|string|Carbon|null}>
      */
-    private array $requestsPool = [];
+    private array $requestsPool;
 
     public function __construct()
     {
-        $this->signature = config('oauth.commands.login');
+        $this->signature = (string)config('oauth.commands.login');
 
         parent::__construct();
     }
@@ -79,7 +79,7 @@ class Login extends Command
      */
     private function serverCommand(): array
     {
-        $redirectUri = str(config('oauth.auth.redirect_uri'))
+        $redirectUri = str((string)config('oauth.auth.redirect_uri'))
             ->replaceStart('http://', '')
             ->replaceStart('https://', '');
 
@@ -87,7 +87,7 @@ class Login extends Command
             (new PhpExecutableFinder())->find(includeArgs: false),
             '-S',
             $redirectUri->toString(),
-            __DIR__ . '/../../../bin/server.php',
+            __DIR__.'/../../../bin/server.php',
         ];
     }
 
@@ -130,7 +130,7 @@ class Login extends Command
                     unset($this->requestsPool[$requestPort]);
 
                     $process->stop();
-                } elseif (!empty($line)) {
+                } elseif (! empty($line)) {
                     $position = strpos($line, '] ');
 
                     if ($position !== false) {
